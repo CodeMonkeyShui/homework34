@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>新闻瀑布流-懒加载</title>
+	<style>
+		body,p,div,ul,li {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+		ul,li {
+			list-style: none;
+		}
+		.contain{
+			width: 900px;
+			margin: 0 auto;
+		}
+		.ct {
+			position: relative;
+		}
+		.ct .item {
+			position: absolute;
+			transition: all 0.8s;
+			border: 1px solid #ccc;
+			width: 280px;
+			padding: 0 0 10px 0;
+			margin: 10px;
+			transition: all 0.8s;
+		}
+		.item img {
+			width: 260px;
+			margin: 10px;
+		}
+		.item .header {
+			height: 25px;
+			margin: 0 10px;
+			border-bottom: 1px solid #ccc;
+		}
+		.item .brif {
+			font-size: 12px;
+			line-height: 1.8;
+			margin: 10px 15px 0;
+			color: #777371;
+		}
+		#load {
+			visibility: hidden;
+			height: 20px;
+		}
+		.hide {
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<div class="contain">
+		<ul class="ct">
+			<!--<li class="item">
+    			<a href="#" class="link">
+    				<img src="http://s.img.mix.sina.com.cn/auto/resize?img=http%3A%2F%2Fwww.sinaimg.cn%2Fdy%2Fslidenews%2F5_img%2F2016_09%2F453_75615_657883.jpg&size=250_0" alt="">
+    			</a>
+    			<h4 class="header">标题</h4>
+    			<p class="desp">
+    				当地时间2016年3月1日，在东部与亲俄武装作战中受伤的乌克兰士兵接受海豚治疗。
+    			</p>
+    		</li>-->
+			<li class="item hide"></li>
+		</ul>
+		<div id="load">我是看不见的</div>
+	</div>
+	<script src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.js"></script>
+	<script>
+		// 1.获取数据
+		// 2.根据数据，生成节点，加载图片填充li
+		// 3.使用瀑布流放置到页面
+		// 检测#load后刷新数据放到页面
+
+		var perPageCount = 10;
+		var curPage = 1;
+		var nodeWidth = $('.item').outerWidth(true);
+		var	colSum = parseInt($('.ct').outerWidth(true)/nodeWidth);
+		var colSumHeight = [];
+		for(var i=0; i<colSum; i++){
+			colSumHeight[i] = 0;
+		}
+		var isArrive = true;
+		start()
+
+		function start(){
+			loadAndPlace(function(newsList){
+				// 回调函数内容
+				isArrive = true
+				var $newsList = $(newsList)
+				$newsList.each(function(idx,news){
+					var $node = getNode(news)
+					$node.find('img').load(function(){
+						console.log('loading.....success!!!')
+						console.log('img height:')
+						console.log($node.find('img').outerHeight())
+						$('.ct').append($node)
+						waterFall($node)
+					})
+				})
+			})
+			isArrive = false
+		}
+
+		
+
+		function loadAndPlace(callback){
+			$.ajax({
+				url: 'http://platform.sina.com.cn/slide/album_tech',
+				dataType: 'jsonp',
+				jsonp: 'jsoncallback',
+				data: {
+					app_key: '1271687855',
+					num: perPageCount,
+					page: curPage	
+				}
+			}).done(function(ret){
+				if(ret && ret.status && ret.status.code === '0'){
+					curPage++;
+					callback(ret.data)
+				}else{
+					console.log('传回数据错误!!!')
+				}
+			})
+		}
+
+		$(window).scroll(function(){
+			if(!isArrive){
+				return
+			}
+			if(isVisual($('#load'))){
+				start()
+			}
+		})
+
+		function getNode(item){
+			var tpl = ''
+			tpl += '<li class="item">';
+			tpl += ' <a href="'+ item.url +'" class="link"><img src="' + item.img_url + '" alt=""></a>';
+			tpl += ' <h4 class="header">'+ item.short_name +'</h4>';
+			tpl += '<p class="desp">'+item.short_intro+'</p>';
+			tpl += '</li>';
+		
+			return $(tpl)
+		}
+		function waterFall($item){
+			var minHeight = colSumHeight[0];
+			var idx = 0;
+			for(var i = 0; i < colSumHeight.length; i++){
+				if(colSumHeight[i] < minHeight){
+					minHeight = colSumHeight[i];
+					idx = i;
+				}
+			}
+			$item.css({
+				top: minHeight,
+				left: nodeWidth*idx,
+				opacity: 1
+			});
+			colSumHeight[idx] = $item.outerHeight(true) + colSumHeight[idx]
+			$('.ct').height(Math.max.apply(null,colSumHeight))
+		}
+		// 检查$node的位置是否在浏览器窗口内
+		function isVisual($node){
+			var scollTop = $(window).scrollTop();
+			var windowHeight = $(window).height();
+			var nodeHeight = $node.offset().top;
+			if(nodeHeight < (scollTop + windowHeight) && nodeHeight > scollTop){
+				return true
+			}else{
+				return false
+			}
+		}
+
+	</script>
+</body>
+</html>

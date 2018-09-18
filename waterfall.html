@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>瀑布流</title>
+	<style>
+		.item{
+			width: 200px;
+			position: absolute;
+			border: 1px solid #ccc;
+			margin: 5px;
+			transition: all 1s;
+		}
+		.h1{
+			background-color: darkorange;
+			height: 300px;
+		}
+		.h2{
+			background-color: lightcoral;
+			height: 200px;
+		}
+		.h3{
+			background-color: royalblue;
+			height: 400px;
+		}
+		.content{
+			width: 90%;
+			margin: 0 auto;
+			position: relative;
+		}
+	</style>
+</head>
+<body>
+	<div class="content">
+		<div class="item h1">1</div>
+		<div class="item h2">2</div>
+		<div class="item h3">3</div>
+		<div class="item h1">4</div>
+		<div class="item h1">5</div>
+		<div class="item h2">6</div>
+		<div class="item h1">7</div>
+		<div class="item h3">8</div>
+		<div class="item h2">9</div>
+		<div class="item h1">10</div>
+		<div class="item h3">11</div>
+		<div class="item h1">12</div>
+		<div class="item h2">13</div>
+		<div class="item h2">14</div>
+		<div class="item h3">15</div>
+		<div class="item h1">16</div>
+		<div class="item h1">1</div>
+		<div class="item h2">2</div>
+		<div class="item h3">3</div>
+		<div class="item h1">4</div>
+		<div class="item h1">5</div>
+		<div class="item h2">6</div>
+		<div class="item h1">7</div>
+		<div class="item h3">8</div>
+		<div class="item h2">9</div>
+		<div class="item h1">10</div>
+		<div class="item h3">11</div>
+		<div class="item h1">12</div>
+		<div class="item h2">13</div>
+		<div class="item h2">14</div>
+		<div class="item h3">15</div>
+		<div class="item h1">16</div>
+	</div>
+	
+	<script src="http://apps.bdimg.com/libs/jquery/1.9.1/jquery.js"></script>
+	<script>
+		/*waterFall()
+
+		$(window).resize(function(){
+			waterFall()
+		})
+		实现函数
+			function waterFall(){
+				var col = parseInt($('.content').width()/$('.item').width())
+				// 数组存放该行所有高度
+				var arr = []
+				for(var i=0; i < col; i++){
+					arr[i]=0;
+				}
+				$('.item').each(function(){
+					var minValue = Math.min.apply(null,arr)
+					var minIndex = arr.indexOf(minValue)
+
+					$(this).css({
+						top: arr[minIndex],
+						left: $(this).outerWidth(true)*minIndex
+					})
+
+					arr[minIndex] += $(this).outerHeight(true)
+				})
+			}
+		*/
+		waterFall = (function(){
+			// 初始化函数
+			function init(){
+				waterFall()
+				$(window).resize(function(){
+					waterFall()
+				})
+			}
+			// 实现函数
+			function waterFall(){
+				var col = parseInt($('.content').width()/$('.item').width())
+				// 数组存放该行所有高度
+				var arr = []
+				for(var i=0; i < col; i++){
+					arr[i]=0;
+				}
+				$('.item').each(function(){
+					var minValue = Math.min.apply(null,arr)
+					var minIndex = arr.indexOf(minValue)
+
+					$(this).css({
+						top: arr[minIndex],
+						left: $(this).outerWidth(true)*minIndex
+					})
+
+					arr[minIndex] += $(this).outerHeight(true)
+				})
+			}
+			return {
+				init: init
+			}
+		})()
+		waterFall.init()
+	</script>
+</body>
+</html>
